@@ -1,96 +1,41 @@
-declare namespace callsites {
-	interface CallSite {
-		/**
-		Returns the value of `this`.
-		*/
-		getThis(): unknown | undefined;
-
-		/**
-		Returns the type of `this` as a string. This is the name of the function stored in the constructor field of `this`, if available, otherwise the object's `[[Class]]` internal property.
-		*/
-		getTypeName(): string | null;
-
-		/**
-		Returns the current function.
-		*/
-		getFunction(): Function | undefined;
-
-		/**
-		Returns the name of the current function, typically its `name` property. If a name property is not available an attempt will be made to try to infer a name from the function's context.
-		*/
-		getFunctionName(): string | null;
-
-		/**
-		Returns the name of the property of `this` or one of its prototypes that holds the current function.
-		*/
-		getMethodName(): string | undefined;
-
-		/**
-		Returns the name of the script if this function was defined in a script.
-		*/
-		getFileName(): string | null;
-
-		/**
-		Returns the current line number if this function was defined in a script.
-		*/
-		getLineNumber(): number | null;
-
-		/**
-		Returns the current column number if this function was defined in a script.
-		*/
-		getColumnNumber(): number | null;
-
-		/**
-		Returns a string representing the location where `eval` was called if this function was created using a call to `eval`.
-		*/
-		getEvalOrigin(): string | undefined;
-
-		/**
-		Returns `true` if this is a top-level invocation, that is, if it's a global object.
-		*/
-		isToplevel(): boolean;
-
-		/**
-		Returns `true` if this call takes place in code defined by a call to `eval`.
-		*/
-		isEval(): boolean;
-
-		/**
-		Returns `true` if this call is in native V8 code.
-		*/
-		isNative(): boolean;
-
-		/**
-		Returns `true` if this is a constructor call.
-		*/
-		isConstructor(): boolean;
-	}
+/// <reference types="node" />
+/// <reference types="node" />
+/// <reference types="node" />
+/// <reference types="node" />
+import * as net from 'net';
+import * as tls from 'tls';
+import * as http from 'http';
+import type { Duplex } from 'stream';
+export * from './helpers';
+interface HttpConnectOpts extends net.TcpNetConnectOpts {
+    secureEndpoint: false;
+    protocol?: string;
 }
-
-declare const callsites: {
-	/**
-	Get callsites from the V8 stack trace API.
-
-	@returns An array of `CallSite` objects.
-
-	@example
-	```
-	import callsites = require('callsites');
-
-	function unicorn() {
-		console.log(callsites()[0].getFileName());
-		//=> '/Users/sindresorhus/dev/callsites/test.js'
-	}
-
-	unicorn();
-	```
-	*/
-	(): callsites.CallSite[];
-
-	// TODO: Remove this for the next major release, refactor the whole definition to:
-	// declare function callsites(): callsites.CallSite[];
-	// export = callsites;
-	default: typeof callsites;
-};
-
-export = callsites;
+interface HttpsConnectOpts extends tls.ConnectionOptions {
+    secureEndpoint: true;
+    protocol?: string;
+    port: number;
+}
+export type AgentConnectOpts = HttpConnectOpts | HttpsConnectOpts;
+declare const INTERNAL: unique symbol;
+export declare abstract class Agent extends http.Agent {
+    private [INTERNAL];
+    options: Partial<net.TcpNetConnectOpts & tls.ConnectionOptions>;
+    keepAlive: boolean;
+    constructor(opts?: http.AgentOptions);
+    abstract connect(req: http.ClientRequest, options: AgentConnectOpts): Promise<Duplex | http.Agent> | Duplex | http.Agent;
+    /**
+     * Determine whether this is an `http` or `https` request.
+     */
+    isSecureEndpoint(options?: AgentConnectOpts): boolean;
+    private incrementSockets;
+    private decrementSockets;
+    getName(options?: AgentConnectOpts): string;
+    createSocket(req: http.ClientRequest, options: AgentConnectOpts, cb: (err: Error | null, s?: Duplex) => void): void;
+    createConnection(): Duplex;
+    get defaultPort(): number;
+    set defaultPort(v: number);
+    get protocol(): string;
+    set protocol(v: string);
+}
+//# sourceMappingURL=index.d.ts.map
